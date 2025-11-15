@@ -1,0 +1,44 @@
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+.buildpath
+.aider*
+
+# Dependencies
+vendor/
+node_modules/
+composer.lock
+package-lock.json
+
+# Build and distribution files
+dist/
+*.zip
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/
+cache/
+themes/
+
+# Test and cache files
+.phpunit.result.cache
+
+# Environment files
+.env
+.env.local
+
+# Docker volumes (optional, uncomment if needed)
+# docker-compose.override.yml
