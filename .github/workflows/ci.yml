@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Start Docker environment
-        run: make upd
+        run: docker compose -f docker-compose.ci.yml up -d
 
       - name: Wait for services to be ready
         run: |
@@ -26,9 +26,8 @@ jobs:
           timeout=120
           elapsed=0
           while [ $elapsed -lt $timeout ]; do
-            if docker compose ps | grep -q "healthy"; then
+            if docker compose -f docker-compose.ci.yml ps | grep -q "healthy"; then
               echo "✅ Services are healthy"
-              sleep 10
               break
             fi
             echo "⏳ Waiting for services... ($elapsed/$timeout seconds)"
@@ -36,24 +35,42 @@ jobs:
             elapsed=$((elapsed + 5))
           done
 
+          echo "Waiting for FacturaScripts to initialize..."
+          sleep 15
+
           echo "📊 Container status:"
-          docker compose ps
+          docker compose -f docker-compose.ci.yml ps
 
-          echo "📋 FacturaScripts logs:"
-          docker compose logs facturascripts --tail=50
+      - name: Copy plugin files to container
+        run: |
+          echo "📦 Copying plugin files to container..."
+          docker compose -f docker-compose.ci.yml exec -T facturascripts mkdir -p /var/www/html/Plugins/PluginTemplate
+          docker cp . facturascripts-plugin-template-facturascripts-1:/var/www/html/Plugins/PluginTemplate/
 
-      - name: Run tests with make test
-        run: make test
+          echo "📋 Fixing permissions..."
+          docker compose -f docker-compose.ci.yml exec -T facturascripts chown -R nobody:nobody /var/www/html/Plugins/PluginTemplate || true
+
+          echo "✅ Plugin files copied successfully"
+
+      - name: Run tests
+        run: |
+          echo "🧪 Running unit tests..."
+          docker compose -f docker-compose.ci.yml exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Installing PHPUnit if needed..." && if [ ! -f vendor/bin/phpunit ]; then php84 /usr/local/bin/composer require --dev phpunit/phpunit --no-interaction; fi'
+          docker compose -f docker-compose.ci.yml exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Setting up test environment..." && mkdir -p Test/Plugins && cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/ 2>/dev/null || true && cp Plugins/PluginTemplate/Test/bootstrap.php Test/bootstrap.php 2>/dev/null || true && cp Plugins/PluginTemplate/Test/install-plugins.php Test/install-plugins.php 2>/dev/null || true'
+          docker compose -f docker-compose.ci.yml exec -T facturascripts sh -c 'cd /var/www/html && test -f Test/Plugins/install-plugins.txt || (echo "❌ Error: No tests found in Test/main/" && exit 1)'
+          docker compose -f docker-compose.ci.yml exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Installing test plugins..." && php84 Test/install-plugins.php'
+          docker compose -f docker-compose.ci.yml exec -T facturascripts sh -c 'cd /var/www/html && test -f phpunit-plugins.xml || echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><phpunit bootstrap=\"Test/bootstrap.php\" colors=\"true\"><testsuites><testsuite name=\"PluginTests\"><directory>Test/Plugins</directory></testsuite></testsuites></phpunit>" > phpunit-plugins.xml'
+          docker compose -f docker-compose.ci.yml exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Running PHPUnit tests..." && php84 vendor/bin/phpunit -c phpunit-plugins.xml'
 
       - name: Show logs on failure
         if: failure()
         run: |
           echo "📋 Full logs:"
-          docker compose logs
+          docker compose -f docker-compose.ci.yml logs
 
       - name: Stop Docker environment
         if: always()
-        run: make down
+        run: docker compose -f docker-compose.ci.yml down -v
 
   test:
     needs: docker-test
