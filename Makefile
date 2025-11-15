@@ -1,6 +1,6 @@
 # Makefile to facilitate the use of Docker for FacturaScripts plugin development
 
-.PHONY: help up upd down pull build shell clean package enable-plugin rebuild test logs ps fresh check-docker
+.PHONY: help up upd down pull build shell clean package enable-plugin rebuild lint format test logs ps fresh check-docker
 
 # Define SED_INPLACE based on the operating system
 ifeq ($(shell uname), Darwin)
@@ -97,6 +97,24 @@ rebuild: check-docker
 	@docker compose exec facturascripts sh -c "curl -s http://localhost:8080/deploy?action=rebuild > /dev/null"
 	@echo "Rebuild complete!"
 
+# Run PHP CodeSniffer to check code style
+lint: check-docker upd
+	@echo "Running PHP CodeSniffer..."
+	@echo ""
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing phpcs if needed..." && if [ ! -f vendor/bin/phpcs ]; then php84 /usr/local/bin/composer require --dev squizlabs/php_codesniffer --no-interaction; fi'
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && php84 vendor/bin/phpcs --standard=Plugins/PluginTemplate/phpcs.xml Plugins/PluginTemplate --colors'
+	@echo ""
+	@echo "✅ Lint check completed!"
+
+# Run PHP CS Fixer to automatically fix code style
+format: check-docker upd
+	@echo "Running PHP CS Fixer..."
+	@echo ""
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing php-cs-fixer if needed..." && if [ ! -f vendor/bin/php-cs-fixer ]; then php84 /usr/local/bin/composer require --dev friendsofphp/php-cs-fixer --no-interaction; fi'
+	@docker compose exec facturascripts sh -c 'cd /var/www/html/Plugins/PluginTemplate && php84 /var/www/html/vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --verbose'
+	@echo ""
+	@echo "✅ Code formatting completed!"
+
 # Run unit tests inside container
 test: check-docker upd
 	@echo "Running unit tests..."
@@ -139,6 +157,10 @@ help:
 	@echo "  shell             - Open a shell inside the facturascripts container"
 	@echo "  logs              - Tail container logs"
 	@echo "  ps                - Show container status"
+	@echo ""
+	@echo "Code Quality:"
+	@echo "  lint              - Run PHP CodeSniffer to check code style"
+	@echo "  format            - Run PHP CS Fixer to automatically fix code style"
 	@echo ""
 	@echo "Testing:"
 	@echo "  test              - Run unit tests inside container"

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PluginTemplate plugin for FacturaScripts.
  * Script to install plugins for testing
@@ -20,7 +21,7 @@ if (!file_exists($installFile)) {
 }
 
 $plugins = trim(file_get_contents($installFile));
-echo "Plugins to install: " . $plugins . "\n";
+echo 'Plugins to install: ' . $plugins . "\n";
 
 // In a real FacturaScripts installation, this would install the plugins
 // For now, we just print them

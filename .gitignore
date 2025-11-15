@@ -35,6 +35,7 @@ themes/
 
 # Test and cache files
 .phpunit.result.cache
+.php-cs-fixer.cache
 
 # Environment files
 .env

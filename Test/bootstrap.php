@@ -1,4 +1,5 @@
 <?php
+
 /**
  * This file is part of PluginTemplate plugin for FacturaScripts.
  * PHPUnit bootstrap file for testing

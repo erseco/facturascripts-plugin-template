@@ -74,6 +74,10 @@ PluginTemplate/
 - `make shell` - Shell into the facturascripts container
 - `make ps` - Show container status
 
+### Code Quality
+- `make lint` - Check code style with PHP CodeSniffer
+- `make format` - Auto-fix code style with PHP CS Fixer
+
 ### Testing
 - `make test` - Run unit tests inside container
 

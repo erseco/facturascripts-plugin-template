@@ -54,10 +54,11 @@ jobs:
 
           echo "✅ Plugin files copied successfully"
 
+      - name: Run code style check
+        run: make lint
+
       - name: Run tests
-        run: |
-          echo "🧪 Running unit tests..."
-          make test
+        run: make test
 
       - name: Show logs on failure
         if: failure()

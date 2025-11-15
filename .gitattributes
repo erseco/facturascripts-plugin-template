@@ -31,3 +31,6 @@
 /phpunit.xml            export-ignore
 /phpunit-plugins.xml    export-ignore
 /.phpunit.result.cache  export-ignore
+/phpcs.xml              export-ignore
+/.php-cs-fixer.php      export-ignore
+/.php-cs-fixer.cache    export-ignore
