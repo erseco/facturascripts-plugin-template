@@ -17,22 +17,16 @@ jobs:
       - name: Checkout plugin
         uses: actions/checkout@v4
 
-      - name: Create docker-compose override for CI
+      - name: Remove plugin mount from docker-compose.yml
         run: |
           # In CI we don't mount the plugin directory to avoid permission issues
           # Instead we copy the files after the container is running
-          cat > docker-compose.override.yml << 'EOF'
-          services:
-            facturascripts:
-              volumes:
-                - facturascripts_data:/var/www/html/volume
-          EOF
-
-      - name: Start Docker environment
-        run: docker compose up -d
+          sed -i '/\.\/:/d' docker-compose.yml
 
       - name: Wait for services to be ready
         run: |
+          make upd
+
           echo "Waiting for containers to be healthy..."
           timeout=120
           elapsed=0
@@ -49,9 +43,6 @@ jobs:
           echo "Waiting for FacturaScripts to initialize..."
           sleep 15
 
-          echo "📊 Container status:"
-          docker compose ps
-
       - name: Copy plugin files to container
         run: |
           echo "📦 Copying plugin files to container..."
@@ -66,12 +57,7 @@ jobs:
       - name: Run tests
         run: |
           echo "🧪 Running unit tests..."
-          docker compose exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Installing PHPUnit if needed..." && if [ ! -f vendor/bin/phpunit ]; then php84 /usr/local/bin/composer require --dev phpunit/phpunit --no-interaction; fi'
-          docker compose exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Setting up test environment..." && mkdir -p Test/Plugins && cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/ 2>/dev/null || true && cp Plugins/PluginTemplate/Test/bootstrap.php Test/bootstrap.php 2>/dev/null || true && cp Plugins/PluginTemplate/Test/install-plugins.php Test/install-plugins.php 2>/dev/null || true'
-          docker compose exec -T facturascripts sh -c 'cd /var/www/html && test -f Test/Plugins/install-plugins.txt || (echo "❌ Error: No tests found in Test/main/" && exit 1)'
-          docker compose exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Installing test plugins..." && php84 Test/install-plugins.php'
-          docker compose exec -T facturascripts sh -c 'cd /var/www/html && test -f phpunit-plugins.xml || echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><phpunit bootstrap=\"Test/bootstrap.php\" colors=\"true\"><testsuites><testsuite name=\"PluginTests\"><directory>Test/Plugins</directory></testsuite></testsuites></phpunit>" > phpunit-plugins.xml'
-          docker compose exec -T facturascripts sh -c 'cd /var/www/html && echo "→ Running PHPUnit tests..." && php84 vendor/bin/phpunit -c phpunit-plugins.xml'
+          make test
 
       - name: Show logs on failure
         if: failure()
@@ -81,7 +67,7 @@ jobs:
 
       - name: Stop Docker environment
         if: always()
-        run: docker compose down -v
+        run: make clean
 
   test:
     needs: docker-test
