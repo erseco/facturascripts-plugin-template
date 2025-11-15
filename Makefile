@@ -36,7 +36,7 @@ endif
 up: check-docker
 	docker compose up --remove-orphans
 
-# Start Docker containers in background mode (daemon)
+# Start Docker containers in background mode/daemon
 upd: check-docker
 	docker compose up --detach --remove-orphans
 
@@ -97,29 +97,20 @@ rebuild: check-docker
 	@docker compose exec facturascripts sh -c "curl -s http://localhost:8080/deploy?action=rebuild > /dev/null"
 	@echo "Rebuild complete!"
 
-# Run unit tests (requires local FacturaScripts with testing tools)
-test:
+# Run unit tests inside container
+test: check-docker
+	@echo "Running unit tests..."
 	@echo ""
-	@echo "╔════════════════════════════════════════════════════════════════╗"
-	@echo "║                    UNIT TESTING INFORMATION                     ║"
-	@echo "╚════════════════════════════════════════════════════════════════╝"
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing PHPUnit if needed..." && if [ ! -f vendor/bin/phpunit ]; then php84 /usr/local/bin/composer require --dev phpunit/phpunit --no-interaction; fi'
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Setting up test environment..." && mkdir -p Test/Plugins && cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/ 2>/dev/null || true && cp Plugins/PluginTemplate/Test/bootstrap.php Test/bootstrap.php 2>/dev/null || true && cp Plugins/PluginTemplate/Test/install-plugins.php Test/install-plugins.php 2>/dev/null || true'
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && test -f Test/Plugins/install-plugins.txt || (echo "❌ Error: No tests found in Test/main/" && exit 1)'
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing test plugins..." && php84 Test/install-plugins.php'
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && test -f phpunit-plugins.xml || echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?><phpunit bootstrap=\"Test/bootstrap.php\" colors=\"true\"><testsuites><testsuite name=\"PluginTests\"><directory>Test/Plugins</directory></testsuite></testsuites></phpunit>" > phpunit-plugins.xml'
+	@echo "→ Running PHPUnit tests..."
 	@echo ""
-	@echo "⚠️  Local testing requires a full FacturaScripts development setup."
+	@docker compose exec facturascripts sh -c 'cd /var/www/html && php84 vendor/bin/phpunit -c phpunit-plugins.xml'
 	@echo ""
-	@echo "📋 Recommended approach:"
-	@echo "   • Push your code to GitHub"
-	@echo "   • Tests will run automatically via GitHub Actions"
-	@echo "   • View results in the 'Actions' tab"
-	@echo ""
-	@echo "🔧 Advanced: Local testing with FacturaScripts:"
-	@echo "   1. Clone FacturaScripts: git clone https://github.com/NeoRazorX/facturascripts.git"
-	@echo "   2. Install dependencies: cd facturascripts && composer install"
-	@echo "   3. Copy plugin: cp -r /path/to/PluginTemplate Plugins/"
-	@echo "   4. Copy tests: cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/"
-	@echo "   5. Run tests: php Test/install-plugins.php && vendor/bin/phpunit -c phpunit-plugins.xml"
-	@echo ""
-	@echo "📚 Documentation: See README.md for more details"
-	@echo ""
+	@echo "✅ Tests completed!"
 
 # View logs
 logs:
@@ -138,23 +129,23 @@ help:
 	@echo "Usage: make <command>"
 	@echo ""
 	@echo "Docker management:"
-	@echo "  up                - Start Docker containers in interactive mode"
-	@echo "  upd               - Start Docker containers in background mode (detached)"
-	@echo "  down              - Stop and remove Docker containers"
-	@echo "  logs              - Tail container logs"
-	@echo "  ps                - Show container status"
-	@echo "  build             - Build or rebuild Docker containers"
+	@echo "  up                - Start containers in interactive mode"
+	@echo "  upd               - Start containers in background mode (detached)"
+	@echo "  down              - Stop and remove containers"
+	@echo "  build             - Build or rebuild containers"
 	@echo "  pull              - Pull the latest images from the registry"
-	@echo "  clean             - Stop containers and remove volumes and orphans"
+	@echo "  clean             - Stop containers and remove volumes"
 	@echo "  fresh             - Clean volumes and start again (fresh DB)"
 	@echo "  shell             - Open a shell inside the facturascripts container"
+	@echo "  logs              - Tail container logs"
+	@echo "  ps                - Show container status"
+	@echo ""
+	@echo "Testing:"
+	@echo "  test              - Run unit tests inside container"
 	@echo ""
 	@echo "Plugin management:"
 	@echo "  enable-plugin     - Enable the plugin in FacturaScripts"
 	@echo "  rebuild           - Rebuild FacturaScripts dynamic classes"
-	@echo ""
-	@echo "Testing:"
-	@echo "  test              - Show unit testing information"
 	@echo ""
 	@echo "Packaging:"
 	@echo "  package           - Generate a .zip package of the plugin with version tag"

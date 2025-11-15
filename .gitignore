@@ -40,5 +40,5 @@ themes/
 .env
 .env.local
 
-# Docker volumes (optional, uncomment if needed)
-# docker-compose.override.yml
+# Docker override files (user customizations)
+docker-compose.override.yml

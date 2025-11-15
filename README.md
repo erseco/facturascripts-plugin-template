@@ -16,11 +16,12 @@ A modern, Docker-based template for building custom plugins for FacturaScripts. 
 ## Quick Start (Docker)
 
 - **Requirements:** Docker Desktop 4+, Make
-- **Start stack:** `make up` then open `http://localhost:8080`
-- **Stop stack:** `make down`
+- **Start:** `make upd` then open `http://localhost:8080`
+- **Run tests:** `make test`
+- **Stop:** `make down`
 - **Login credentials:** `admin` / `admin`
 
-This template uses the lightweight image `erseco/alpine-facturascripts`, which boots FacturaScripts with sensible defaults and tooling.
+This template uses the `erseco/alpine-facturascripts:main` image, which includes FacturaScripts with composer and testing tools pre-installed.
 
 ## Project Structure
 
@@ -73,10 +74,12 @@ PluginTemplate/
 - `make shell` - Shell into the facturascripts container
 - `make ps` - Show container status
 
+### Testing
+- `make test` - Run unit tests inside container
+
 ### Plugin Management
 - `make enable-plugin` - Enable the plugin in FacturaScripts
 - `make rebuild` - Rebuild FacturaScripts dynamic classes
-- `make test` - Run unit tests
 
 ### Packaging
 - `make package VERSION=x.y.z` - Build a distributable ZIP
@@ -252,41 +255,34 @@ The ZIP file will exclude development files (examples, git files, tests, etc.).
 
 The template includes example unit tests in the `Test/main/` directory.
 
-**Running tests:**
+**Running tests locally with Docker:**
 
-The **recommended way** to run tests is via **GitHub Actions** (automatic):
+```bash
+# 1. Start the environment
+make upd
+
+# 2. Run the tests
+make test
+
+# 3. Stop when done
+make down
+```
+
+**What happens when you run `make test`:**
+1. Copies your tests to FacturaScripts' Test directory
+2. Runs the plugin installation script
+3. Executes PHPUnit tests (already installed in the container)
+4. Shows results with colors
+
+**Alternative: Automatic testing via GitHub Actions:**
 
 ```bash
 # Simply push your code
 git push origin main
 
-# Tests run automatically - check the "Actions" tab on GitHub
+# Tests run automatically on PHP 8.2, 8.3, and 8.4
+# Check the "Actions" tab on GitHub
 ```
-
-**Advanced: Local testing** (requires full FacturaScripts setup):
-
-If you need to run tests locally, you'll need a complete FacturaScripts development installation:
-
-```bash
-# 1. Clone FacturaScripts
-git clone https://github.com/NeoRazorX/facturascripts.git
-cd facturascripts
-
-# 2. Install dependencies
-composer install
-
-# 3. Copy your plugin
-cp -r /path/to/PluginTemplate Plugins/
-
-# 4. Copy tests
-cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/
-
-# 5. Run tests
-php Test/install-plugins.php
-vendor/bin/phpunit -c phpunit-plugins.xml
-```
-
-For more info, run: `make test`
 
 **To add new tests:**
 

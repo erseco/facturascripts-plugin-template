@@ -4,12 +4,34 @@
  * PHPUnit bootstrap file for testing
  */
 
-// Define the base path
-define('FS_FOLDER', dirname(__DIR__));
+// Define FacturaScripts folder
+define('FS_FOLDER', __DIR__ . '/..');
 
-// Load FacturaScripts bootstrap if it exists
-if (file_exists(FS_FOLDER . '/vendor/autoload.php')) {
-    require_once FS_FOLDER . '/vendor/autoload.php';
+// Load composer autoloader
+require_once FS_FOLDER . '/vendor/autoload.php';
+
+// Load FacturaScripts configuration
+if (file_exists(FS_FOLDER . '/config.php')) {
+    require_once FS_FOLDER . '/config.php';
 }
 
-// This file is used when running tests inside FacturaScripts
+// Initialize minimal FacturaScripts environment for testing
+if (!defined('FS_LANG')) {
+    define('FS_LANG', 'es_ES');
+}
+
+if (!defined('FS_TIMEZONE')) {
+    define('FS_TIMEZONE', 'Europe/Madrid');
+}
+
+// Register plugin namespaces with the autoloader
+$loader = require FS_FOLDER . '/vendor/autoload.php';
+
+// Register FacturaScripts Core
+$loader->addPsr4('FacturaScripts\\Core\\', FS_FOLDER . '/Core');
+
+// Register PluginTemplate
+$loader->addPsr4('FacturaScripts\\Plugins\\PluginTemplate\\', FS_FOLDER . '/Plugins/PluginTemplate');
+
+// If your plugin depends on other plugins, register them here as well
+// Example: $loader->addPsr4('FacturaScripts\\Plugins\\OtherPlugin\\', FS_FOLDER . '/Plugins/OtherPlugin');
