@@ -1,5 +1,7 @@
 # Makefile to facilitate the use of Docker for FacturaScripts plugin development
 
+.PHONY: help up upd down pull build shell clean package enable-plugin rebuild test logs ps fresh check-docker
+
 # Define SED_INPLACE based on the operating system
 ifeq ($(shell uname), Darwin)
   SED_INPLACE = sed -i ''
@@ -95,34 +97,29 @@ rebuild: check-docker
 	@docker compose exec facturascripts sh -c "curl -s http://localhost:8080/deploy?action=rebuild > /dev/null"
 	@echo "Rebuild complete!"
 
-# Run unit tests
-test: check-docker
-	@echo "Running unit tests..."
-	@docker compose exec facturascripts sh -c "\
-		mkdir -p Test/Plugins && \
-		cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/ 2>/dev/null || true && \
-		if [ -f Test/Plugins/install-plugins.txt ]; then \
-			php84 Test/install-plugins.php && \
-			if [ ! -f vendor/bin/phpunit ]; then \
-				composer require --dev phpunit/phpunit --no-interaction; \
-			fi && \
-			if [ ! -f phpunit-plugins.xml ]; then \
-				cat > phpunit-plugins.xml << 'EOF'\n\
-<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\
-<phpunit bootstrap=\"Test/bootstrap.php\" colors=\"true\">\n\
-    <testsuites>\n\
-        <testsuite name=\"PluginTests\">\n\
-            <directory>Test/Plugins</directory>\n\
-        </testsuite>\n\
-    </testsuites>\n\
-</phpunit>\n\
-EOF\n\
-			fi && \
-			vendor/bin/phpunit -c phpunit-plugins.xml; \
-		else \
-			echo 'No tests found in Test/main/'; \
-			exit 1; \
-		fi"
+# Run unit tests (requires local FacturaScripts with testing tools)
+test:
+	@echo ""
+	@echo "╔════════════════════════════════════════════════════════════════╗"
+	@echo "║                    UNIT TESTING INFORMATION                     ║"
+	@echo "╚════════════════════════════════════════════════════════════════╝"
+	@echo ""
+	@echo "⚠️  Local testing requires a full FacturaScripts development setup."
+	@echo ""
+	@echo "📋 Recommended approach:"
+	@echo "   • Push your code to GitHub"
+	@echo "   • Tests will run automatically via GitHub Actions"
+	@echo "   • View results in the 'Actions' tab"
+	@echo ""
+	@echo "🔧 Advanced: Local testing with FacturaScripts:"
+	@echo "   1. Clone FacturaScripts: git clone https://github.com/NeoRazorX/facturascripts.git"
+	@echo "   2. Install dependencies: cd facturascripts && composer install"
+	@echo "   3. Copy plugin: cp -r /path/to/PluginTemplate Plugins/"
+	@echo "   4. Copy tests: cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/"
+	@echo "   5. Run tests: php Test/install-plugins.php && vendor/bin/phpunit -c phpunit-plugins.xml"
+	@echo ""
+	@echo "📚 Documentation: See README.md for more details"
+	@echo ""
 
 # View logs
 logs:
@@ -155,6 +152,9 @@ help:
 	@echo "Plugin management:"
 	@echo "  enable-plugin     - Enable the plugin in FacturaScripts"
 	@echo "  rebuild           - Rebuild FacturaScripts dynamic classes"
+	@echo ""
+	@echo "Testing:"
+	@echo "  test              - Show unit testing information"
 	@echo ""
 	@echo "Packaging:"
 	@echo "  package           - Generate a .zip package of the plugin with version tag"

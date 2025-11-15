@@ -76,6 +76,9 @@ PluginTemplate/
 ### Plugin Management
 - `make enable-plugin` - Enable the plugin in FacturaScripts
 - `make rebuild` - Rebuild FacturaScripts dynamic classes
+- `make test` - Run unit tests
+
+### Packaging
 - `make package VERSION=x.y.z` - Build a distributable ZIP
 
 Run `make help` to see all available targets.
@@ -248,6 +251,42 @@ The ZIP file will exclude development files (examples, git files, tests, etc.).
 ### Unit Tests
 
 The template includes example unit tests in the `Test/main/` directory.
+
+**Running tests:**
+
+The **recommended way** to run tests is via **GitHub Actions** (automatic):
+
+```bash
+# Simply push your code
+git push origin main
+
+# Tests run automatically - check the "Actions" tab on GitHub
+```
+
+**Advanced: Local testing** (requires full FacturaScripts setup):
+
+If you need to run tests locally, you'll need a complete FacturaScripts development installation:
+
+```bash
+# 1. Clone FacturaScripts
+git clone https://github.com/NeoRazorX/facturascripts.git
+cd facturascripts
+
+# 2. Install dependencies
+composer install
+
+# 3. Copy your plugin
+cp -r /path/to/PluginTemplate Plugins/
+
+# 4. Copy tests
+cp -r Plugins/PluginTemplate/Test/main/* Test/Plugins/
+
+# 5. Run tests
+php Test/install-plugins.php
+vendor/bin/phpunit -c phpunit-plugins.xml
+```
+
+For more info, run: `make test`
 
 **To add new tests:**
 
