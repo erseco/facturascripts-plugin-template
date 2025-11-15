@@ -98,7 +98,7 @@ rebuild: check-docker
 	@echo "Rebuild complete!"
 
 # Run unit tests inside container
-test: check-docker
+test: check-docker upd
 	@echo "Running unit tests..."
 	@echo ""
 	@docker compose exec facturascripts sh -c 'cd /var/www/html && echo "→ Installing PHPUnit if needed..." && if [ ! -f vendor/bin/phpunit ]; then php84 /usr/local/bin/composer require --dev phpunit/phpunit --no-interaction; fi'

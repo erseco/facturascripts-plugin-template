@@ -40,5 +40,5 @@ themes/
 .env
 .env.local
 
-# Docker override files (user customizations)
+# Docker override files (user customizations or CI generated)
 docker-compose.override.yml

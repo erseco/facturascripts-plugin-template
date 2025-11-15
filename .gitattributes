@@ -27,7 +27,6 @@
 
 # Development tools
 /docker-compose.yml     export-ignore
-/docker-compose.ci.yml  export-ignore
 /Makefile               export-ignore
 /phpunit.xml            export-ignore
 /phpunit-plugins.xml    export-ignore
