@@ -21,10 +21,35 @@ jobs:
         run: make upd
 
       - name: Wait for services to be ready
-        run: sleep 30
+        run: |
+          echo "Waiting for containers to be healthy..."
+          timeout=120
+          elapsed=0
+          while [ $elapsed -lt $timeout ]; do
+            if docker compose ps | grep -q "healthy"; then
+              echo "✅ Services are healthy"
+              sleep 10
+              break
+            fi
+            echo "⏳ Waiting for services... ($elapsed/$timeout seconds)"
+            sleep 5
+            elapsed=$((elapsed + 5))
+          done
+
+          echo "📊 Container status:"
+          docker compose ps
+
+          echo "📋 FacturaScripts logs:"
+          docker compose logs facturascripts --tail=50
 
       - name: Run tests with make test
         run: make test
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          echo "📋 Full logs:"
+          docker compose logs
 
       - name: Stop Docker environment
         if: always()
