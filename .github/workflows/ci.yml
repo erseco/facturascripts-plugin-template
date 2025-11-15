@@ -9,7 +9,29 @@ on:
       - develop
 
 jobs:
+  docker-test:
+    name: Docker Environment Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+
+      - name: Start Docker environment
+        run: make upd
+
+      - name: Wait for services to be ready
+        run: sleep 30
+
+      - name: Run tests with make test
+        run: make test
+
+      - name: Stop Docker environment
+        if: always()
+        run: make down
+
   test:
+    needs: docker-test
     runs-on: ubuntu-latest
 
     strategy:
@@ -71,6 +93,7 @@ jobs:
           define('FS_COOKIE_EXPIRE', 31536000);
           define('FS_ROUTE', '/');
           define('FS_DEBUG', true);
+          define('FS_DB_FOREIGN_KEYS', true);
           EOF
 
       - name: Initialize FacturaScripts

@@ -409,7 +409,7 @@ Your plugin built with this template can use any license you prefer.
 
 ## Author
 
-Created by [Your Name](https://github.com/yourusername)
+Created by [Ernesto Serrano](https://github.com/erseco)
 
 Based on the [alpine-facturascripts](https://github.com/erseco/alpine-facturascripts) Docker image.
 
