@@ -4,8 +4,13 @@ name: Release
 on:
   push:
     tags:
-      - '[0-9]*'   # Matches: 1, 2, 1.0, 1.2.3, etc.
-      - 'v[0-9]*'  # Matches: v1, v1.2, v1.2.3, etc.
+      # FacturaScripts only accepts integer or single-decimal versions
+      # (e.g. 7 or 7.1). Triple-dot (1.0.1) and pre-release (1.0-beta)
+      # tags are intentionally NOT matched.
+      - '[0-9]+'
+      - '[0-9]+.[0-9]+'
+      - 'v[0-9]+'
+      - 'v[0-9]+.[0-9]+'
 
 permissions:
   contents: write
@@ -37,3 +42,15 @@ jobs:
         with:
           files: PluginTemplate-${{ steps.version.outputs.VERSION }}.zip
           generate_release_notes: true
+
+      # When forking this template, update plugin-slug to the slug your
+      # plugin is registered under on https://facturascripts.com/forja.
+      - name: Publish to FacturaScripts forja
+        uses: erseco/action-facturascripts-publicar-forja@v1
+        with:
+          plugin-slug: plugintemplate
+          zip-path: PluginTemplate-${{ steps.version.outputs.VERSION }}.zip
+          version: ${{ steps.version.outputs.VERSION }}
+          status: stable
+          forja-user: ${{ secrets.FS_FORJA_USER }}
+          forja-password: ${{ secrets.FS_FORJA_PASSWORD }}
