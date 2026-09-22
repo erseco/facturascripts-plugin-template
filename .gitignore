@@ -43,3 +43,6 @@ themes/
 
 # Docker override files (user customizations or CI generated)
 docker-compose.override.yml
+
+/coverage.xml
+/.phpunit.cache/
