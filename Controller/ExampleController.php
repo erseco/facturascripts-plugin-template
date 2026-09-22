@@ -61,12 +61,12 @@ class ExampleController extends Controller
         // Example: get data from database, process forms, etc.
 
         // You can add messages to the user:
-        // $this->toolBox()->i18nLog()->notice('Hello from ExampleController!');
+        // \FacturaScripts\Core\Tools::log()->notice('Hello from ExampleController!');
 
         // You can redirect to another page:
         // $this->redirect('ListCliente');
 
         // You can get request parameters:
-        // $id = $this->request->get('id');
+        // $id = $this->request()->query->get('id');
     }
 }

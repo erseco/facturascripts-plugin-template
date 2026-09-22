@@ -20,8 +20,9 @@
 
 namespace FacturaScripts\Plugins\PluginTemplate\Model;
 
-use FacturaScripts\Core\Model\Base\ModelClass;
-use FacturaScripts\Core\Model\Base\ModelTrait;
+use FacturaScripts\Core\Template\ModelClass;
+use FacturaScripts\Core\Template\ModelTrait;
+use FacturaScripts\Core\Tools;
 
 /**
  * Example model for demonstration purposes
@@ -118,9 +119,9 @@ class ExampleModel extends ModelClass
     public function test(): bool
     {
         // Validate name is not empty
-        $this->name = trim($this->name);
+        $this->name = trim($this->name ?? '');
         if (empty($this->name)) {
-            $this->toolBox()->i18nLog()->warning('name-cannot-be-empty');
+            Tools::log()->warning('name-cannot-be-empty');
             return false;
         }
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="Test/bootstrap.php" colors="true" failOnWarning="true">
+    <testsuites>
+        <testsuite name="PluginTemplate"><directory>Test/Plugins</directory></testsuite>
+    </testsuites>
+    <coverage includeUncoveredFiles="true" processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">Plugins/PluginTemplate/Controller</directory>
+            <directory suffix=".php">Plugins/PluginTemplate/Model</directory>
+            <file>Plugins/PluginTemplate/Init.php</file>
+        </include>
+    </coverage>
+</phpunit>

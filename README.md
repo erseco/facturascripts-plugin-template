@@ -1,5 +1,7 @@
 # PluginTemplate para FacturaScripts
 
+[![codecov](https://codecov.io/gh/erseco/facturascripts-plugin-template/branch/main/graph/badge.svg)](https://codecov.io/gh/erseco/facturascripts-plugin-template)
+
 Plantilla base para crear plugins de FacturaScripts con una estructura mínima, tests, Docker y workflows de CI/release.
 
 ## Qué incluye
