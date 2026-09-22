@@ -67,6 +67,6 @@ class ExampleController extends Controller
         // $this->redirect('ListCliente');
 
         // You can get request parameters:
-        // $id = $this->request->get('id');
+        // $id = $this->request()->query->get('id');
     }
 }

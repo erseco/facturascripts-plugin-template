@@ -154,6 +154,7 @@ jobs:
       - name: Copy tests to FacturaScripts Test directory
         run: |
           mkdir -p facturascripts/Test/Plugins
+          cp plugin/Test/bootstrap.php facturascripts/Test/bootstrap.php
           if [ -d "plugin/Test/main" ]; then
             cp -r plugin/Test/main/* facturascripts/Test/Plugins/
           fi
@@ -188,7 +189,8 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           use_oidc: true
-          files: facturascripts/coverage.xml
+          working-directory: plugin
+          files: ../facturascripts/coverage.xml
           disable_search: true
           fail_ci_if_error: true
 
